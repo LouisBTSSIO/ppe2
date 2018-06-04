@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le :  lun. 04 juin 2018 à 09:39
+-- Généré le :  lun. 04 juin 2018 à 10:31
 -- Version du serveur :  5.7.19
 -- Version de PHP :  5.6.31
 
@@ -196,8 +196,8 @@ CREATE TABLE IF NOT EXISTS `fraisforfait` (
 
 INSERT INTO `fraisforfait` (`id`, `libelle`, `montant`) VALUES
 ('ETP', 'Forfait Etape', '110.00'),
-('KM', 'Frais Kilométrique', '0.62'),
-('NUI', 'Nuitée Hôtel', '80.00'),
+('KM', 'Frais Kilometrique', '0.62'),
+('NUI', 'Nuitee Hotel', '80.00'),
 ('REP', 'Repas Restaurant', '25.00');
 
 -- --------------------------------------------------------

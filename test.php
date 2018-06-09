@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
 <?php
 /** 
  * Regroupe les fonctions d'acc�s aux donn�es.
@@ -23,12 +14,7 @@
  * si probl�me de connexion.
  * @return resource identifiant de connexion
  */
-function connecterServeurBD() {
-    $hote = "localhost";
-    $login = "root";
-    $mdp = "";
-    return mysqli_connect($hote,$login,$mdp,"gsb");
-}
+
 
 /**
  * S�lectionne (rend active) la base de donn�es.
@@ -38,7 +24,7 @@ function connecterServeurBD() {
  * @return boolean succ�s ou �chec de s�lection BD 
  */
 function activerBD($idCnx) {
-    $bd = "gsb";
+    $bd = "alexismopgppegsb";
     $query = "SET CHARACTER SET utf8" ;
     // Modification du jeu de caract�res de la connexion
     $res = mysqli_query(connecterServeurBD(),$query); 
@@ -144,7 +130,8 @@ function existeFicheFrais($idCnx, $unMois, $unIdVisiteur) {
     if ( $idJeuRes ) {
         $ligne = mysqli_fetch_assoc($idJeuRes);
         mysqli_free_result($idJeuRes);
-    }
+    }        
+    
     // si $ligne est un tableau, la fiche de frais existe, sinon elle n'exsite pas
     return is_array($ligne) ;
 }
@@ -164,7 +151,7 @@ function obtenirDernierMoisSaisi($idCnx, $unIdVisiteur) {
     if ( $idJeuRes ) {
         $ligne = mysqli_fetch_assoc($idJeuRes);
         $dernierMois = $ligne["dernierMois"];
-        mysqli_free_result($idJeuRes);
+        mysql_free_result($idJeuRes);
     }        
 	return $dernierMois;
 }
@@ -187,11 +174,13 @@ function ajouterFicheFrais($idCnx, $unMois, $unIdVisiteur) {
 	if ( is_array($laDerniereFiche) && $laDerniereFiche['idEtat']=='CR'){
 		modifierEtatFicheFrais($idCnx, $dernierMois, $unIdVisiteur, 'CL');
 	}
+    
     // ajout de la fiche de frais � l'�tat Cr��
-    $date = date("Y-m-d");
-    $CR = "CR" ;
-    $requete = "insert into FicheFrais (idVisiteur, mois, nbJustificatifs, montantValide, idEtat, dateModif) values ('" . $unIdVisiteur . "','" . $unMois . "',0,NULL,'" . $CR . "','" . $date . "')"; 
-    $test = mysqli_query(connecterServeurBD(), $requete);
+    $requete = "insert into FicheFrais (idVisiteur, mois, nbJustificatifs, montantValide, idEtat, dateModif) values ('" 
+              . $unIdVisiteur 
+              . "','" . $unMoisB . "',0,NULL, 'CR', '" . date("Y-m-d") . "')";
+    mysqli_query(connecterServeurBD(), $requete);
+    
     // ajout des �l�ments forfaitis�s
     $requete = "select id from FraisForfait";
     $idJeuRes = mysqli_query(connecterServeurBD(), $requete);
@@ -205,11 +194,12 @@ function ajouterFicheFrais($idCnx, $unMois, $unIdVisiteur) {
             mysqli_query(connecterServeurBD(), $requete);
             // passage au frais forfait suivant
             $ligne = mysqli_fetch_assoc ($idJeuRes);
+            
         }
-        mysqli_free_result($idJeuRes);        
-    }
-}        
-
+        mysqli_free_result($idJeuRes); 
+              
+    }        
+}
 
 /**
  * Retourne le texte de la requ�te select concernant les mois pour lesquels un 
@@ -245,16 +235,6 @@ function obtenirReqEltsForfaitFicheFrais($unMois, $unIdVisiteur) {
     return $requete;
 }
 
-function obtenirReqEltsForfaitFicheFraisBis($unMois, $unIdVisiteur) {
-    $LeMois = "201804" ; 
-    $Lid = "a17" ;
-    $unMois = filtrerChainePourBD($unMois);
-    $requete = "select idFraisForfait, libelle, quantite from LigneFraisForfait
-              inner join FraisForfait on FraisForfait.id = LigneFraisForfait.idFraisForfait
-              where idVisiteur='a17' and mois='201804'";
-    return $requete;
-}
-
 /**
  * Retourne le texte de la requ�te select concernant les �l�ments hors forfait 
  * d'un visiteur pour un mois donn�s. 
@@ -271,7 +251,6 @@ function obtenirReqEltsHorsForfaitFicheFrais($unMois, $unIdVisiteur) {
     $requete = "select id, date, libelle, montant from LigneFraisHorsForfait
               where idVisiteur='" . $unIdVisiteur 
               . "' and mois='" . $unMois . "'";
-              
     return $requete;
 }
 
@@ -324,29 +303,14 @@ function ajouterLigneHF($idCnx, $unMois, $unIdVisiteur, $uneDateHF, $unLibelleHF
  * @return void  
  */
 function modifierEltsForfait($idCnx, $unMois, $unIdVisiteur, $desEltsForfait) {
-    $i = 0;
     $unMois=filtrerChainePourBD($unMois);
     $unIdVisiteur=filtrerChainePourBD($unIdVisiteur);
-    try{
-    $bdd = new PDO('mysql:host=localhost;dbname=gsb;charset=utf8','root','');
-    }
-     catch (Exception $e) {
-        die ('Erreur : ' . $e -> getMessage());
-    }
-    $requete2 = $bdd->prepare('SELECT idFraisForfait, quantite FROM LigneFraisForfait WHERE mois = :unMois');
-    $requete2->execute(array('unMois' => $unMois));
-    $donnees = $requete2->fetchAll();
-    
     foreach ($desEltsForfait as $idFraisForfait => $quantite) {
-        $quantite = $quantite + $donnees[$i]['quantite'];
-        //var_dump($donnees[$i]['quantite']);
-        $i++;
         $requete = "update LigneFraisForfait set quantite = " . $quantite 
                     . " where idVisiteur = '" . $unIdVisiteur . "' and mois = '"
                     . $unMois . "' and idFraisForfait='" . $idFraisForfait . "'";
       mysqli_query($idCnx, $requete);
     }
-    return (mysqli_query($idCnx, $requete));
 }
 
 /**
@@ -391,9 +355,26 @@ function modifierEtatFicheFrais($idCnx, $unMois, $unIdVisiteur, $unEtat) {
     $requete = "update FicheFrais set idEtat = '" . $unEtat . 
                "', dateModif = now() where idVisiteur ='" .
                $unIdVisiteur . "' and mois = '". $unMois . "'";
-    mysqli_query($idCnx, $requete);
-}             
-?>
-</body>
-</html>
+    mysql_query($requete, $idCnx);
+}    
 
+$bddPPE = new PDO ('mysql:host=localhost;dbname=gsb;charset=utf8', 'root', 'rootroot')or die('Erreur');
+
+$ppe1 = "SELECT * FROM LigneFraisHorsForfait"; 
+$ppe2 = "SELECT MONTH(date) AS mois, YEAR(date) AS annee, COUNT(*) FROM LigneFraisHorsForfait";
+
+
+$repPPE1 = $bddPPE->query($ppe1);
+while ($donnees = $repPPE1->fetch()) {   
+    echo "<table><tr><td>{$donnees['idVisiteur']}</td>";
+    echo "<td>{$donnees['montant']}</td></tr></table>";
+}
+
+
+$repPPE2 = $bddPPE->query($ppe2);
+while ($donnees = $repPPE2->fetch()) {   
+    echo "<tr><td>{$donnees['mois']}</td>";
+    echo "<td>{$donnees['annee']}</td></tr>";
+}
+
+?>

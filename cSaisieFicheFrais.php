@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>PPE2</title>
+    <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -141,9 +141,11 @@ header('Content-Type: text/html; charset=UTF-8');
             </legend>
             <p>
               <label for="txtDateHF">Date : </label>
-              <input type="text" id="txtDateHF" name="txtDateHF" size="30" maxlength="10" 
+
+  <input type="text" class="datepicker" id="txtDateHF" name="txtDateHF" size="30" maxlength="10" 
                      title="Entrez la date d'engagement des frais au format JJ/MM/AAAA" 
-                     value="<?php echo $dateHF; ?>"  />
+                     value="<?php echo $dateHF; ?>" >
+        
             </p>
             <p>
               <label for="txtLibelleHF">Libellé : </label>
